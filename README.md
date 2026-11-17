@@ -145,3 +145,22 @@ GitHub: [@abhayvish7765](https://github.com/panditt76)
 ## 📄 License
 
 This project was developed as part of an internship learning project.
+
+---
+
+## 📸 Project Screenshots
+
+### Dashboard
+![Dashboard](<screenshots/Screenshot (24).png>)
+
+### Student Management
+![student_directory](<screenshots/Screenshot (25).png>)
+
+### EDIT Student
+![edit-update](<screenshots/Screenshot (23).png>)
+
+### Courses
+![courses](<screenshots/Screenshot (26).png>)
+
+### Settings
+![settings](<screenshots/Screenshot (27).png>)
