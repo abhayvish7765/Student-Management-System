@@ -140,7 +140,7 @@ Each student record includes:
 
 **Abhay**
 
-GitHub: [@panditt76](https://github.com/panditt76)
+GitHub: [@abhayvish7765](https://github.com/panditt76)
 
 ## 📄 License
 
