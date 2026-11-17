@@ -138,7 +138,7 @@ Each student record includes:
 
 ## 👨‍💻 Author
 
-**Panditt**
+**Abhay**
 
 GitHub: [@panditt76](https://github.com/panditt76)
 
