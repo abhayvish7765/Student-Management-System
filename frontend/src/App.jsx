@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import "./App.css";
 
-const API_URL = "http://localhost:5000/api/students";
+const API_URL = "https://student-management-systemd.onrender.com/api/students";
 
 const emptyForm = {
   name: "",
