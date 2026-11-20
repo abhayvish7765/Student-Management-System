@@ -5,35 +5,48 @@ const Student = require("../models/Student");
 // Validate student information
 const validateStudentData = ({ name, email, phone, course }) => {
   if (
-    !name?.trim() ||
-    !email?.trim() ||
-    !phone?.trim() ||
-    !course?.trim()
+    typeof name !== "string" ||
+    typeof email !== "string" ||
+    typeof phone !== "string" ||
+    typeof course !== "string"
   ) {
+    return "All fields are required and must be valid text.";
+  }
+
+  const cleanName = name.trim();
+  const cleanEmail = email.trim();
+  const cleanPhone = phone.trim();
+  const cleanCourse = course.trim();
+
+  if (!cleanName || !cleanEmail || !cleanPhone || !cleanCourse) {
     return "All fields are required.";
   }
 
-  if (name.trim().length < 2 || name.trim().length > 60) {
+  if (cleanName.length < 2 || cleanName.length > 60) {
     return "Name must be between 2 and 60 characters.";
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  if (!emailRegex.test(email.trim())) {
+  if (!emailRegex.test(cleanEmail)) {
     return "Please enter a valid email address.";
   }
 
-  const phoneDigits = phone.replace(/\D/g, "");
+  if (cleanEmail.length > 150) {
+    return "Email address is too long.";
+  }
+
+  const phoneDigits = cleanPhone.replace(/\D/g, "");
 
   if (
-    !/^\+?[0-9\s()-]+$/.test(phone.trim()) ||
+    !/^\+?[0-9\s()-]+$/.test(cleanPhone) ||
     phoneDigits.length < 7 ||
     phoneDigits.length > 15
   ) {
     return "Please enter a valid phone number with 7 to 15 digits.";
   }
 
-  if (course.trim().length < 2 || course.trim().length > 80) {
+  if (cleanCourse.length < 2 || cleanCourse.length > 80) {
     return "Course must be between 2 and 80 characters.";
   }
 
@@ -48,7 +61,10 @@ const handleError = (res, error, defaultMessage) => {
     });
   }
 
-  if (error.name === "ValidationError" || error.name === "CastError") {
+  if (
+    error.name === "ValidationError" ||
+    error.name === "CastError"
+  ) {
     return res.status(400).json({
       message: error.message,
     });
@@ -64,7 +80,7 @@ const handleError = (res, error, defaultMessage) => {
 // Add a new student
 const addStudent = async (req, res) => {
   try {
-    const { name, email, phone, course } = req.body;
+    const { name, email, phone, course } = req.body || {};
 
     const validationError = validateStudentData({
       name,
@@ -79,9 +95,22 @@ const addStudent = async (req, res) => {
       });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Check whether email already exists
+    const existingStudent = await Student.findOne({
+      email: normalizedEmail,
+    });
+
+    if (existingStudent) {
+      return res.status(409).json({
+        message: "This email address is already registered.",
+      });
+    }
+
     const student = new Student({
       name: name.trim(),
-      email: email.trim().toLowerCase(),
+      email: normalizedEmail,
       phone: phone.trim(),
       course: course.trim(),
     });
@@ -100,7 +129,9 @@ const addStudent = async (req, res) => {
 // Get all students
 const getStudents = async (req, res) => {
   try {
-    const students = await Student.find().sort({ createdAt: -1 });
+    const students = await Student.find().sort({
+      createdAt: -1,
+    });
 
     return res.status(200).json({
       message: "Students retrieved successfully!",
@@ -122,7 +153,7 @@ const updateStudent = async (req, res) => {
       });
     }
 
-    const { name, email, phone, course } = req.body;
+    const { name, email, phone, course } = req.body || {};
 
     const validationError = validateStudentData({
       name,
@@ -137,11 +168,25 @@ const updateStudent = async (req, res) => {
       });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Check for duplicate email belonging to another student
+    const existingStudent = await Student.findOne({
+      email: normalizedEmail,
+      _id: { $ne: id },
+    });
+
+    if (existingStudent) {
+      return res.status(409).json({
+        message: "This email address is already registered.",
+      });
+    }
+
     const updatedStudent = await Student.findByIdAndUpdate(
       id,
       {
         name: name.trim(),
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         phone: phone.trim(),
         course: course.trim(),
       },
@@ -197,7 +242,10 @@ const deleteStudent = async (req, res) => {
 // Search students by name, email, phone or course
 const searchStudents = async (req, res) => {
   try {
-    const query = req.query.query?.trim();
+    const query =
+      typeof req.query.query === "string"
+        ? req.query.query.trim()
+        : "";
 
     if (!query) {
       return res.status(400).json({
@@ -215,7 +263,9 @@ const searchStudents = async (req, res) => {
         { phone: { $regex: safeQuery, $options: "i" } },
         { course: { $regex: safeQuery, $options: "i" } },
       ],
-    }).sort({ createdAt: -1 });
+    }).sort({
+      createdAt: -1,
+    });
 
     return res.status(200).json({
       message: "Search completed successfully!",
